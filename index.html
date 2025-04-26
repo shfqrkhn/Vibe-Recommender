@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe-Recommender</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom CSS embedded here */
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        #loading-spinner {
+            display: none; /* Hidden by default */
+        }
+
+        #api-error-details {
+            font-size: 0.875em;
+            color: #dc3545; /* Bootstrap danger color */
+            word-break: break-all; /* Prevent long error messages from overflowing */
+            white-space: pre-wrap; /* Preserve whitespace and break lines */
+        }
+
+        /* Style for the collapse content */
+        #apiKeyInstructions .card-body,
+        #howToUse .card-body {
+            background-color: #e9ecef; /* Light grey background for instructions */
+            border-left: 4px solid #007bff; /* Primary color border */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <header class="text-center mb-4">
+            <h1 class="display-4">Vibe-Recommender</h1>
+            <p class="lead">Discover new things based on your current interests. Enter three items and get personalized suggestions powered by AI.</p>
+        </header>
+
+        <main>
+            <section id="input-form" class="card p-4 shadow-sm mb-5">
+                <h2 class="card-title text-center mb-4">Enter Your Vibe</h2>
+
+                <div class="mb-4">
+                     <button class="btn btn-outline-info w-100" type="button" data-bs-toggle="collapse" data-bs-target="#howToUse" aria-expanded="false" aria-controls="howToUse">
+                        How to Use the Vibe-Recommender
+                    </button>
+                    <div class="collapse mt-2" id="howToUse">
+                        <div class="card card-body">
+                            <h5 class="card-title">Getting Started</h5>
+                            <p>The Vibe-Recommender helps you find similar items based on things you already like. Just follow these simple steps:</p>
+                            <ol>
+                                <li><strong>Get your Gemini API Key:</strong> You'll need a free API key from Google AI Studio. Click the "How to get a key" button below for instructions.</li>
+                                <li><strong>Enter your API Key:</strong> Paste your Gemini API key into the "Gemini API Key" field.</li>
+                                <li><strong>Enter Three Items:</strong> In the fields below, enter three items that represent your current vibe. These could be bands, foods, movies, books, hobbies, or anything else!</li>
+                                <li><strong>Analyze and Suggest:</strong> Click the "Analyze and Suggest" button. The app will analyze the common characteristics of your items.</li>
+                                <li><strong>See Your Suggestions:</strong> The results section will appear with the identified characteristics and three alternative suggestions tailored to your vibe.</li>
+                            </ol>
+                            <p class="text-muted small mb-0">Your API key is used for analysis and suggestions and is not stored by this application.</p>
+                        </div>
+                    </div>
+                </div>
+                 <form id="item-form">
+                     <div class="mb-3">
+                        <label for="geminiApiKey" class="form-label">Gemini API Key:</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="geminiApiKey" required placeholder="Enter your Gemini API Key">
+                            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#apiKeyInstructions" aria-expanded="false" aria-controls="apiKeyInstructions">
+                                How to get a key
+                            </button>
+                        </div>
+                        <div class="form-text text-danger">
+                            <strong>Security Warning:</strong> Embedding API keys directly in client-side code is not secure for production applications. Use a backend server to handle API calls securely. This is for demonstration purposes only.
+                        </div>
+                    </div>
+
+                    <div class="collapse mt-3" id="apiKeyInstructions">
+                        <div class="card card-body">
+                            <h5 class="card-title">How to Get a Free Gemini API Key</h5>
+                            <p>You can get a free API key for the Gemini models through Google AI Studio. This is a web-based tool that allows you to quickly prototype with the Gemini models.</p>
+                            <ol>
+                                <li><strong>Go to Google AI Studio:</strong> Open your web browser and navigate to <a href="https://aistudio.google.com/" target="_blank">https://aistudio.google.com/</a>.</li>
+                                <li><strong>Sign In:</strong> Sign in with your Google Account.</li>
+                                <li><strong>Get API Key:</strong> Once you are in Google AI Studio, look for an option to "Get API key" or "Get API key in Google Cloud". This is usually prominent on the page, often in the top right corner or within a project settings menu.</li>
+                                <li><strong>Create API Key:</strong> Follow the prompts to create a new API key. You might need to agree to terms of service or set up a new project if it's your first time using Google Cloud services.</li>
+                                <li><strong>Copy Your API Key:</strong> Once the key is generated, make sure to copy it and keep it in a secure place. You will need this key to use the API in your application.</li>
+                            </ol>
+                            <p class="text-muted small mb-0">Free tiers and usage limits apply. The process and interface may change over time. Refer to official Google documentation for the most up-to-date instructions.</p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="item1" class="form-label">Item 1:</label>
+                        <input type="text" class="form-control" id="item1" required placeholder="e.g., The Beatles">
+                    </div>
+                    <div class="mb-3">
+                        <label for="item2" class="form-label">Item 2:</label>
+                        <input type="text" class="form-control" id="item2" required placeholder="e.g., Pizza">
+                    </div>
+                    <div class="mb-3">
+                        <label for="item3" class="form-label">Item 3:</label>
+                        <input type="text" class="form-control" id="item3" required placeholder="e.g., Star Wars">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Analyze and Suggest</button>
+                    </div>
+                     <div id="loading-spinner" class="text-center mt-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Analyzing...</p>
+                    </div>
+                     <div id="error-message" class="alert alert-danger mt-3 d-none" role="alert">
+                        An error occurred during analysis.
+                        <div id="api-error-details" class="mt-2"></div>
+                    </div>
+                </form>
+            </section>
+
+            <section id="results" class="d-none">
+                <h2 class="text-center mb-4">Analysis and Suggestions</h2>
+                <div id="analysis-results" class="card p-4 shadow-sm mb-4">
+                    <h3 class="card-title">Common Characteristics:</h3>
+                    <p id="common-characteristics"></p>
+                </div>
+
+                <div id="suggestions" class="row row-cols-1 row-cols-md-3 g-4">
+                    </div>
+            </section>
+        </main>
+
+        <footer class="text-center mt-5 py-3 text-muted">
+            <p>&copy; 2025 Vibe-Recommender</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        // Custom JavaScript embedded here
+
+        document.getElementById('item-form').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent standard form submission
+
+            const apiKey = document.getElementById('geminiApiKey').value.trim();
+            const item1 = document.getElementById('item1').value.trim();
+            const item2 = document.getElementById('item2').value.trim();
+            const item3 = document.getElementById('item3').value.trim();
+
+            // Basic validation
+            if (!apiKey || !item1 || !item2 || !item3) {
+                alert('Please enter your API key and all three items.');
+                return;
+            }
+
+            // Show loading spinner and hide previous results/errors
+            document.getElementById('loading-spinner').style.display = 'block';
+            document.getElementById('results').classList.add('d-none');
+            document.getElementById('error-message').classList.add('d-none');
+            document.getElementById('api-error-details').textContent = ''; // Clear previous error details
+
+
+            try {
+                // Call the Gemini API for analysis and suggestions
+                const { characteristics, suggestions } = await callGeminiAPI(item1, item2, item3, apiKey);
+
+                // Display results
+                document.getElementById('common-characteristics').textContent = characteristics;
+                displaySuggestions(suggestions);
+
+                // Show the results section
+                document.getElementById('results').classList.remove('d-none');
+
+                // Scroll to results
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+
+                // Attempt to display more detailed error information
+                const errorDetailsElement = document.getElementById('api-error-details');
+                if (error instanceof Error) {
+                    errorDetailsElement.textContent = `Error: ${error.message}`;
+                } else if (typeof error === 'object' && error !== null) {
+                     // If it's an object, try to stringify it for display
+                     try {
+                        errorDetailsElement.textContent = `Error Details: ${JSON.stringify(error, null, 2)}`;
+                     } catch (e) {
+                         errorDetailsElement.textContent = `Unknown Error Object: ${error}`;
+                     }
+                } else {
+                    errorDetailsElement.textContent = `Unknown Error: ${error}`;
+                }
+
+                document.getElementById('error-message').classList.remove('d-none');
+
+                 document.getElementById('common-characteristics').textContent = 'Analysis failed.';
+                 displaySuggestions([]); // Clear suggestions on error
+            } finally {
+                // Hide loading spinner
+                document.getElementById('loading-spinner').style.display = 'none';
+            }
+        });
+
+        async function callGeminiAPI(item1, item2, item3, apiKey) {
+            // Using the specific endpoint structure from your curl command
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            // Construct the prompt for the Gemini model
+            const prompt = `Analyze the following three items and identify common characteristics or themes. Then, suggest three alternative items that share these characteristics. Provide the output as a JSON object with two keys: "characteristics" (a string describing the common traits) and "suggestions" (an array of three strings, each being a suggestion).
+
+            Items:
+            1. ${item1}
+            2. ${item2}
+            3. ${item3}
+
+            Output format:
+            {
+              "characteristics": "...",
+              "suggestions": ["...", "...", "..."]
+            }`;
+
+            const requestBody = {
+                // Adjust the request body according to the Gemini API documentation
+                contents: [
+                    {
+                        parts: [
+                            { text: prompt }
+                        ]
+                    }
+                ]
+                // Add other parameters as required by the API
+            };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any other headers required by the API, e.g., Authorization
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                let errorDetail = `Status: ${response.status}`;
+                try {
+                    const errorJson = await response.json();
+                    // Attempt to get a meaningful message from the error JSON
+                    errorDetail += `, Message: ${errorJson.error?.message || JSON.stringify(errorJson)}`;
+                } catch (e) {
+                    // If parsing JSON fails, get the raw response text
+                    errorDetail += `, Response Text: ${await response.text()}`;
+                }
+                throw new Error(`API request failed: ${errorDetail}`);
+            }
+
+            const data = await response.json();
+
+            // Parse the response - adjust based on the actual Gemini API response structure
+            // This is a simplified example assuming the model returns the JSON directly in the text
+            // You might need more robust parsing depending on the API's output format.
+            try {
+                 // Attempt to find and parse the JSON string within the response text
+                 const responseText = data.candidates[0].content.parts[0].text;
+                 const jsonMatch = responseText.match(/\{[\s\S]*\}/); // Basic regex to find a JSON object
+                 if (jsonMatch && jsonMatch[0]) {
+                     const result = JSON.parse(jsonMatch[0]);
+                      // Basic validation of the parsed structure
+                     if (typeof result.characteristics === 'string' && Array.isArray(result.suggestions) && result.suggestions.length >= 3) {
+                          return result;
+                     } else {
+                          throw new Error("API response format is unexpected. Parsed data does not match expected structure.");
+                     }
+                 } else {
+                      throw new Error("Could not find JSON object in API response text.");
+                 }
+
+            } catch (parseError) {
+                 console.error('Error parsing API response:', parseError);
+                 console.log('Raw API Response Data:', data); // Log raw data for debugging
+                 throw new Error('Failed to parse API response. Check console for details.');
+            }
+        }
+
+        function displaySuggestions(suggestions) {
+            const suggestionsContainer = document.getElementById('suggestions');
+            suggestionsContainer.innerHTML = ''; // Clear previous suggestions
+
+            if (!suggestions || suggestions.length === 0) {
+                suggestionsContainer.innerHTML = '<p class="text-center col-12">Could not generate specific suggestions based on the input.</p>';
+                return;
+            }
+
+            suggestions.forEach(suggestion => {
+                const suggestionCard = `
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Suggestion</h5>
+                                <p class="card-text">${suggestion}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                suggestionsContainer.innerHTML += suggestionCard;
+            });
+        }
+    </script>
+</body>
+</html>
