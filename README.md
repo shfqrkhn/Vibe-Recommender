@@ -2,6 +2,8 @@
 
 Discover new things based on your current interests. Vibe-Recommender is a simple, single-page web application that takes three items you provide (like bands, foods, movies, etc.), analyzes their common characteristics using the Gemini API, and suggests three alternative items that align with your vibe.
 
+Online demo: https://shfqrkhn.github.io/Vibe-Recommender/
+
 ## Features
 
 * Intuitive Form: Easily input three items.
